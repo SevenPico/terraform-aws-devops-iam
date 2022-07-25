@@ -7,7 +7,7 @@ locals {
 # ------------------------------------------------------------------------------
 data "aws_iam_policy_document" "assume_role" {
   count = module.this.enabled ? 1 : 0
-  source_policy_documents = compact([one(data.aws_iam_policy_document.env0_assume_role[*].json)])
+  source_policy_documents = compact([one(data.aws_iam_policy_document.foriegn_principal_assume_role[*].json)])
 
   dynamic "statement" {
     for_each = var.principals
@@ -55,34 +55,67 @@ data "aws_iam_policy_document" "tfstate" {
 
 
 # ------------------------------------------------------------------------------
-# Deployer Group
+# DevOps Group
 # ------------------------------------------------------------------------------
-module "group_meta" {
+module "devops_group_meta" {
   source  = "registry.terraform.io/cloudposse/label/null"
   version = "0.25.0"
   context = module.this.context
   enabled = module.this.enabled && var.group_enabled
+  name = "devops"
 }
 
-resource "aws_iam_group" "deployers" {
-  count = module.group_meta.enabled ? 1 : 0
-  name  = module.group_meta.id
+resource "aws_iam_group" "devops_deployers" {
+  count = module.devops_group_meta.enabled ? 1 : 0
+  name  = module.devops_group_meta.id
 }
 
 resource "aws_iam_group_policy" "assume_deployer_role" {
-  count  = module.group_meta.enabled ? 1 : 0
-  name   = "${module.group_meta.id}-policy"
-  group  = one(aws_iam_group.deployers[*].id)
+  count  = module.devops_group_meta.enabled ? 1 : 0
+  name   = "${module.devops_group_meta.id}-policy"
+  group  = one(aws_iam_group.devops_deployers[*].id)
   policy = one(data.aws_iam_policy_document.assume_deployer_role[*].json)
 }
 
 data "aws_iam_policy_document" "assume_deployer_role" {
-  count = module.group_meta.enabled ? 1 : 0
+  count = module.devops_group_meta.enabled ? 1 : 0
   statement {
     effect    = "Allow"
     actions   = ["sts:AssumeRole"]
     resources = [
       "arn:aws:iam::*:role/${local.deployment_role_name}"
     ]
+  }
+}
+
+# ------------------------------------------------------------------------------
+# Foriegn Principal
+# ------------------------------------------------------------------------------
+module "foriegn_principal_meta" {
+  source  = "registry.terraform.io/cloudposse/label/null"
+  version = "0.25.0"
+  context = module.this.context
+  enabled = module.this.enabled && var.foreign_principal_enabled
+}
+
+
+# ------------------------------------------------------------------------------
+# foriegn_principal Assume Role Policy
+# ------------------------------------------------------------------------------
+data "aws_iam_policy_document" "foriegn_principal_assume_role" {
+  count = module.foriegn_principal_meta.enabled ? 1 : 0
+
+  statement {
+    effect  = "Allow"
+    actions = ["sts:AssumeRole"]
+    principals {
+      type        = "AWS"
+      identifiers = [var.foreign_principal]
+    }
+    condition {
+      test = "StringEquals"
+      variable = "sts:ExternalId"
+      values = [var.foreign_principal_external_id]
+    }
   }
 }

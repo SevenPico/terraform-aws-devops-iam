@@ -1,8 +1,3 @@
-variable "principals" {
-  type    = map(any)
-  default = {}
-}
-
 variable "policy_arns" {
   type    = list(string)
   default = []
@@ -19,17 +14,24 @@ variable "group_enabled" {
   default = false
 }
 
-variable "env0_enabled" {
+
+variable "principals" {
+  type    = map(any)
+  default = {}
+}
+
+
+variable "foreign_principal_enabled" {
   type = bool
   default = false
 }
 
-variable "env0_principal" {
+variable "foreign_principal" {
   type = string
   default = ""
 }
 
-variable "env0_external_id" {
+variable "foreign_principal_external_id" {
   type = string
   default = ""
 }
