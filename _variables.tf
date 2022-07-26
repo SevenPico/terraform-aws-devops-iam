@@ -14,6 +14,15 @@ variable "group_enabled" {
   default = false
 }
 
+variable "role_name" {
+  type = string
+  default = "DeploymentRole"
+}
+
+variable "group_name" {
+  type = string
+  default = "devops"
+}
 
 variable "principals" {
   type    = map(any)
