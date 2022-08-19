@@ -1,27 +1,27 @@
 # ------------------------------------------------------------------------------
-# IAM Meta
+# IAM Context
 # ------------------------------------------------------------------------------
-module "role_meta" {
-  source  = "registry.terraform.io/cloudposse/label/null"
-  version = "0.25.0"
-  context = module.this.context
-  enabled = module.this.enabled
+module "role_context" {
+  source  = "app.terraform.io/SevenPico/context/null"
+  version = "1.0.1"
+  context = module.context.self
+  enabled = module.context.enabled
   name    = var.role_name
 }
 
-module "group_meta" {
-  source  = "registry.terraform.io/cloudposse/label/null"
-  version = "0.25.0"
-  context = module.this.context
-  enabled = module.this.enabled && var.group_enabled
+module "group_context" {
+  source  = "app.terraform.io/SevenPico/context/null"
+  version = "1.0.1"
+  context = module.context.self
+  enabled = module.context.enabled && var.group_enabled
   name    = var.group_name
 }
 
-module "foriegn_principal_meta" {
-  source  = "registry.terraform.io/cloudposse/label/null"
-  version = "0.25.0"
-  context = module.role_meta.context
-  enabled = module.role_meta.enabled && var.foreign_principal_enabled
+module "foriegn_principal_context" {
+  source  = "app.terraform.io/SevenPico/context/null"
+  version = "1.0.1"
+  context = module.role_context.self
+  enabled = module.role_context.enabled && var.foreign_principal_enabled
 }
 
 
@@ -29,7 +29,7 @@ module "foriegn_principal_meta" {
 # IAM Role
 # ------------------------------------------------------------------------------
 data "aws_iam_policy_document" "assume_role" {
-  count                   = module.role_meta.enabled ? 1 : 0
+  count                   = module.role_context.enabled ? 1 : 0
   source_policy_documents = compact([one(data.aws_iam_policy_document.foriegn_principal_assume_role[*].json)])
 
   dynamic "statement" {
@@ -46,8 +46,8 @@ data "aws_iam_policy_document" "assume_role" {
 }
 
 resource "aws_iam_role" "deployment" {
-  count = module.role_meta.enabled ? 1 : 0
-  tags  = module.role_meta.tags
+  count = module.role_context.enabled ? 1 : 0
+  tags  = module.role_context.tags
 
   name        = var.role_name
   description = "Allows access to run infrastructure deployments."
@@ -83,19 +83,19 @@ data "aws_iam_policy_document" "tfstate" {
 # IAM Group
 # ------------------------------------------------------------------------------
 resource "aws_iam_group" "deployment" {
-  count = module.group_meta.enabled ? 1 : 0
-  name  = module.group_meta.id
+  count = module.group_context.enabled ? 1 : 0
+  name  = module.group_context.id
 }
 
 resource "aws_iam_group_policy" "assume_deployer_role" {
-  count  = module.group_meta.enabled ? 1 : 0
-  name   = "${module.group_meta.id}-policy"
+  count  = module.group_context.enabled ? 1 : 0
+  name   = "${module.group_context.id}-policy"
   group  = one(aws_iam_group.deployment[*].id)
   policy = one(data.aws_iam_policy_document.assume_deployment_role[*].json)
 }
 
 data "aws_iam_policy_document" "assume_deployment_role" {
-  count = module.group_meta.enabled ? 1 : 0
+  count = module.group_context.enabled ? 1 : 0
   statement {
     effect  = "Allow"
     actions = ["sts:AssumeRole"]
@@ -110,7 +110,7 @@ data "aws_iam_policy_document" "assume_deployment_role" {
 # foriegn_principal Assume Role Policy
 # ------------------------------------------------------------------------------
 data "aws_iam_policy_document" "foriegn_principal_assume_role" {
-  count = module.foriegn_principal_meta.enabled ? 1 : 0
+  count = module.foriegn_principal_context.enabled ? 1 : 0
 
   statement {
     effect  = "Allow"

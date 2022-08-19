@@ -16,12 +16,12 @@ variable "group_enabled" {
 
 variable "role_name" {
   type = string
-  default = "DeploymentRole"
+  default = "DevOpsRole"
 }
 
 variable "group_name" {
   type = string
-  default = "devops"
+  default = "devops-users"
 }
 
 variable "principals" {
