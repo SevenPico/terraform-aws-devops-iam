@@ -45,7 +45,7 @@ data "aws_iam_policy_document" "assume_role" {
   }
 }
 
-resource "aws_iam_role" "deployment" {
+resource "aws_iam_role" "devops" {
   count = module.role_context.enabled ? 1 : 0
   tags  = module.role_context.tags
 
@@ -58,7 +58,7 @@ resource "aws_iam_role" "deployment" {
 
   dynamic "inline_policy" {
     for_each = merge(var.inline_policies, {
-      deployment-tfstate-access : one(data.aws_iam_policy_document.tfstate[*].json)
+      devops-tfstate-access : one(data.aws_iam_policy_document.tfstate[*].json)
     })
     content {
       name   = inline_policy.key
@@ -82,19 +82,19 @@ data "aws_iam_policy_document" "tfstate" {
 # ------------------------------------------------------------------------------
 # IAM Group
 # ------------------------------------------------------------------------------
-resource "aws_iam_group" "deployment" {
+resource "aws_iam_group" "devops" {
   count = module.group_context.enabled ? 1 : 0
   name  = module.group_context.id
 }
 
-resource "aws_iam_group_policy" "assume_deployer_role" {
+resource "aws_iam_group_policy" "assume_devops_role" {
   count  = module.group_context.enabled ? 1 : 0
   name   = "${module.group_context.id}-policy"
-  group  = one(aws_iam_group.deployment[*].id)
-  policy = one(data.aws_iam_policy_document.assume_deployment_role[*].json)
+  group  = one(aws_iam_group.devops[*].id)
+  policy = one(data.aws_iam_policy_document.assume_devops_role[*].json)
 }
 
-data "aws_iam_policy_document" "assume_deployment_role" {
+data "aws_iam_policy_document" "assume_devops_role" {
   count = module.group_context.enabled ? 1 : 0
   statement {
     effect  = "Allow"
