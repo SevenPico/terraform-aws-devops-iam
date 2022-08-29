@@ -3,7 +3,7 @@
 # ------------------------------------------------------------------------------
 module "role_context" {
   source  = "app.terraform.io/SevenPico/context/null"
-  version = "1.0.1"
+  version = "1.0.2"
   context = module.context.self
   enabled = module.context.enabled
   name    = var.role_name
@@ -11,7 +11,7 @@ module "role_context" {
 
 module "group_context" {
   source  = "app.terraform.io/SevenPico/context/null"
-  version = "1.0.1"
+  version = "1.0.2"
   context = module.context.self
   enabled = module.context.enabled && var.group_enabled
   name    = var.group_name
@@ -19,7 +19,7 @@ module "group_context" {
 
 module "foriegn_principal_context" {
   source  = "app.terraform.io/SevenPico/context/null"
-  version = "1.0.1"
+  version = "1.0.2"
   context = module.role_context.self
   enabled = module.role_context.enabled && var.foreign_principal_enabled
 }
