@@ -31,17 +31,17 @@ variable "inline_policies" {
 }
 
 variable "group_enabled" {
-  type = bool
+  type    = bool
   default = false
 }
 
 variable "role_name" {
-  type = string
+  type    = string
   default = "DevOpsRole"
 }
 
 variable "group_name" {
-  type = string
+  type    = string
   default = "devops-users"
 }
 
@@ -52,17 +52,17 @@ variable "principals" {
 
 
 variable "foreign_principal_enabled" {
-  type = bool
+  type    = bool
   default = false
 }
 
 variable "foreign_principal" {
-  type = string
+  type    = string
   default = ""
 }
 
 variable "foreign_principal_external_id" {
-  type = string
+  type    = string
   default = ""
 }
 

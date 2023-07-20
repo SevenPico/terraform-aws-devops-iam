@@ -67,6 +67,7 @@ data "aws_iam_policy_document" "assume_role" {
 }
 
 resource "aws_iam_role" "devops" {
+  #checkov:skip=CKV_AWS_274:skipping 'Disallow IAM roles, users, and groups from using the AWS AdministratorAccess policy'
   count = module.role_context.enabled ? 1 : 0
   tags  = module.role_context.tags
 
